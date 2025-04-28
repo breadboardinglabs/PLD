@@ -1,0 +1,77 @@
+Name     IODECODER2V3 ;
+PartNo   00 ;
+Date     11/08/24 ;
+Revision 03 ;
+Designer Dave Henry ;
+Company  ;
+Assembly None ;
+Location  ;
+Device   p22v10 ;
+
+/* 13/07/2024 V1 Created for Breadboard PC Video #39 for RTC IO and later for IDE IO Decoding */
+/* 16/07/2024 V2 Corrected RTCAEN to positive logic added RTCCS intermediate term as output as could be too many terms */
+/* 11/08/2024 V3 Added support for IDE Controller /CS_IDE and /IDEIOR and /IDEIOW */
+
+/*********************************************************************************/
+/* 00070 00071 RTC Note that A1,A2 & A3 not decoded so repeated upto 0007F       */
+/*********************************************************************************/
+
+/* Pin Map 
+          --------
+ /IOR    |1     24| Vcc
+ /IOW    |2     23| A0
+/IOA19A12|3     22| RTCAEN
+ A4      |4     21| /RTCW
+ A5      |5     20| /RTCR
+ A6      |6     19| RTCCS
+ A7      |7     18| NC
+ A8      |8     17| /IDEIOW
+ A9      |9     16| /IDEIOR
+ A10     |10    15| /CS_IDE
+ A11     |11    14| IRQ8
+ Gnd     |12    13| /IRQ8
+          --------
+*/
+
+/* *************** INPUT PINS *********************/
+
+PIN	1 = !IOR ;				/* IO Read active low */ 
+PIN	2 = !IOW ;				/* IO Write active low */ 
+PIN	3 = !IOA19A12 ;				/* IO Read or Write AND A12-A19=0 active low */ 
+PIN	4 = A4	;				/* address bus A4 */ 
+PIN	5 = A5	;				/* address bus A5 */ 
+PIN	6 = A6	;				/* address bus A6 */ 
+PIN	7 = A7  ;			        /* address bus A7 */ 
+PIN	8 = A8	;				/* address bus A8 */ 
+PIN	9 = A9	;				/* address bus A9 */ 
+PIN    10 = A10	;				/* address bus A10 */ 
+PIN    11 = A11	;				/* address bus A11 */ 
+PIN    13 = IRQ8INV ;				/* Interrupt Request 8 active low */ 
+PIN    23 = A0  ;				/* address bus A0 */ 
+
+/* *************** OUTPUT PINS *********************/
+
+PIN  22 = RTCAEN	;			/* Address Strobe Write */ 
+PIN  21 = !RTCW		;			/* RTC Data Write	*/ 
+PIN  20 = !RTCR		;			/* RTC Data Read        */ 
+PIN  19 = RTCCS         ;                       /* Positive Logic Chip Select for 0070-007F */
+PIN  17 = !IDEIOW       ;                       /* Buffered /IOW for IDE drive */
+PIN  16 = !IDEIOR       ;                       /* Buffered /IOR for IDE drive */
+PIN  15 = !CS_IDE       ;                       /* IDE Chip Select for IO Port 0x0300       */
+PIN  14 = IRQ8          ;
+
+/* intermediate terms */
+
+ 
+RTCCS		=  A4 & A5 & A6 & !A7 & !A8 & !A9 & !A10 & !A11 & IOA19A12 ;		/* 0070-007F */
+/* Output terms */
+
+/* Due to invert on IOW and IOR then uses positive logic */
+
+IRQ8 = !IRQ8INV ;                              /* /IRQ Out from RTC needs inverting for PIC IRQ8 */
+RTCAEN = !A0 & RTCCS & IOW ;                     /* Address is 0x0070 and IOW */
+RTCW = A0 & RTCCS & IOW ;                        /* Data is 0x0071 and IOW */
+RTCR = A0 & RTCCS & IOR ;                        /* Data is 0x0071 and IOR */
+IDEIOW = IOW;
+IDEIOR = IOR;
+CS_IDE =  !A4 & !A5 & !A6 & !A7 & A8 & A9 & !A10 & !A11 & IOA19A12 ; /* 0300-030F Active Low done on pin mapping */

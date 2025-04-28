@@ -1,0 +1,101 @@
+Name            Nanocomp Video Snow Elimination;
+Partno          VIDSNOWV1;
+Revision        1;
+Date            12/11/23;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          v2500;
+
+/* 01/01/2023 V1                                                                 */
+/*********************************************************************************/
+/*                                                                               */
+/*********************************************************************************/
+
+/* Pin Map 
+       --------
+Clk/In|1     40| In
+In    |2     39| In
+In    |3     38| In
+I/O0  |4     37| In
+I/O1  |5     36| I/O6
+I/O2  |6     35| I/O7
+I/O3  |7     34| I/O8
+I/O4  |8     33| I/O9
+I/O5  |9     32| I/O10
+Vcc   |10    31| I/O11
+I/O15 |11    30| GND
+I/O16 |12    29| I/O23 
+I/O15 |13    28| I/O22 
+I/O14 |14    27| I/O21 
+I/O13 |15    26| I/O20 
+I/O12 |16    25| I/O19 
+In    |17    24| I/O18 
+In    |18    23| In 
+In    |19    22| In 
+In    |20    21| In 
+       --------
+*/
+
+/*
+ * Inputs:  All are signals from the 6809
+ */
+
+Pin 1  =  DotClk;
+Pin 2  =  RW;
+Pin 3  =  A15;
+Pin 4  =  A14;
+Pin 5  =  A13;
+Pin 6  =  A12;
+Pin 7  =  A11;
+Pin 8  =  A10;
+Pin 9  =  A9;
+Pin 10 =  A8;
+Pin 11 =  Q;
+Pin 13 =  E;
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+CLK=DotClk;
+
+Pin 23 = !Y0VRAM;     /* Video RAM Low */
+Pin 22 = !Y1RAM;      /* RAM /CS */
+Pin 21 = !Y2CRAM;     /* Video Character RAM */
+Pin 20 = !Y3CRTC;     /* CRTC */
+Pin 19 = !Y4PIA1;     /* PIA MC6821 /CS */
+Pin 18 = !Y5SERIAL1;  /* MC6850 /CS */
+Pin 17 = Y0VRAMH;      /* Video RAM High */
+Pin 16 = !Y7ROM;      /* ROM /CS */
+Pin 15 = VRAMRW1;     /* Video RAM R/W shortened by Q&E */
+Pin 14 = VRAMRW;      /* Video RAM R/W ORd with !Y0VRAMCE */
+/*
+ * Logic:  All outputs are active low signals in the target system.
+ */
+Y0VRAM =    (A15 & !A14) & E;
+Y0VRAMH = Y0VRAM;
+/* This was an output but not required externally, now used for delayed VRAMRW */
+Y0VRAMCE =  (A15 & !A14) & E & Q;
+Y1RAM =     !A15 & E;
+Y2CRAM =    A15 & A14 & !A13 & !A12 & E;
+Y3CRTC =    A15 & A14 & !A13 & A12 & !A11 &  A10 & E; /* take out A8 and A9 conditions now that 74LS138 is used in place of Y6 */
+Y4PIA1 =    A15 & A14 & !A13 & A12 & !A11 & !A10 & !A9 & !A8 & E;
+Y5SERIAL1 = A15 & A14 & !A13 & A12 & !A11 & !A10 &  A9 & !A8 & E;
+/* Y6VIDC1 =   A15 & A14 & !A13 & A12 & !A11 &  A10 & !A9 &  A8 & E; */
+Y7ROM =     A15 & A14 & A13 & E & RW;
+/* This narrows Write low level to only be when Y0 CE is low to resolve stray VRAM updates */
+/* V8 Also now delayed by 2 DotClock 2x40ns to ensure Video RAM R/W timing correct */ 
+VRAMRW1.d = (RW # !Y0VRAMCE);
+VRAMRW.d = VRAMRW1;
+
+ PIN 1 = clk;
+ PIN 2 = clr;
+ PIN 15 = Q0;
+ PIN 14 = Q1;
+ PIN 13 = Q2;
+ PIN 12 = Q3;
+ Q3.d = !clr & ((!Q3 & Q2 & Q1 & Q0) # (Q3 & !(Q2 & Q1 & Q0)));
+ Q2.d = !clr & ((!Q2 & Q1 & Q0) # (Q2 & !(Q1 & Q0)));
+ Q1.d = !clr & (!Q1 & Q0 # Q1 & !Q0);
+ Q0.d = !clr & !Q0;

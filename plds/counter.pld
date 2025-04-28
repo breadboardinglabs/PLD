@@ -1,0 +1,51 @@
+	Name                Counter;
+	Partno              FL1201;
+	Revision            01;
+	Date                08/26/91;
+	Designer            RGT;
+	Company             LDI;
+	Location            None;
+	Assembly            None;
+	Device              VIRTUAL;
+/*******************************************/
+/* 4-bit counter                           */
+/*******************************************/
+
+/** inputs **/
+PIN = clk; /* clock signal for registers */
+PIN = load;/* load signal */
+PIN = !ClrFlag;
+PIN = [LoadPin0..3]; /* pins from which to load data */
+
+/** outputs **/
+PIN = [CountPin0..3];
+
+/* intermediate variables and fields */
+field STATE_BITS = [Count0..3];
+field LOAD_BUS = [LoadPin0..3];
+
+/** state machine definition **/
+SequenceD STATE_BITS {¬
+/* build a repeated loop for the states */
+$REPEAT i = [0..15]
+    Present 'h'{¬i}
+    /* go to state 0 if clear signal is true */
+    /* if the load signal is false go to the *
+     * next state. Note that the next state  *
+     * is (current state + 1) modulo 16.     *
+     * This causes the counter to wrap back  *
+     * to 0 when in the last state           */
+If !load Next 'h'{¬(i+1)%16};
+If !load & ClrFlag Next’b’0;
+$REPEND
+/* Add the load capability by using the      *
+ * APPEND statement. This has the effect of  *
+ * adding more inputs to the OR gate for     *
+ * this output. This equation states that if *
+ * the load signal is true then the counter  *
+ * registers are loaded with data from the   *
+ * load pins. This is why 'load' was used in *
+ * the equations for the 'IF' statements in  *
+ * the state definitions.                    */
+APPEND STATE_BITS.d = load & LOAD_BUS;
+

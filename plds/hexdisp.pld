@@ -1,0 +1,65 @@
+      HEXDISP.PLD
+
+Name                Hexdisp;
+Partno              CA0007;
+Revision            02;
+Date                07/16/87;
+Designer            T. Kahl;
+Company             ATI;
+Location            None;
+Assembly            None;
+
+/******************************************************************/
+/*                                                                */
+/*                                                    a           */
+/* This is a hexadecimal-to-seven-segment           -----         */
+/* decoder capable of driving  common-anode        |     |        */
+/* LEDs. It incorporates both a ripple-           f|     |b       */
+/* blanking input (to inhibit displaying           |  g  |        */
+/* leading zeroes) and a ripple blanking output     -----         */
+/* to allow for easy cascading of digits           |     |        */
+/*                                                e|     |c       */
+/*                                                 |     |        */
+/*                                                  -----         */
+/*                                                    d           */
+/*                                                                */
+/******************************************************************/
+/* Allowable Target Device Types: 32 x 8 PROM (82S123 or          */
+/* equivalent                                                     */
+/******************************************************************/
+/**  Input group (Note this is only a comment)                   **/
+
+pin [10..13] = [D0..3];     /* data input lines to display        */
+pin 14 = !rbi;                   /* ripple blanking input         */
+
+/** Output Group  ( Note this is only a comment )                **/
+
+pin [7..1] = ![a,b,c,d,e,f,g];   /* Segment output lines          */
+pin 9      = !rbo;               /* Ripple Blanking output        */
+
+/**  Declarations and Intermediate Variable Definitions           */
+field data = [D3..0];            /* hexadecimal input field       */
+field segment=[abcdefg];         /* Display segment field         */
+$define ON  'b'1               /* segment lit when logically"ON"  */
+$define OFF 'b'0             /* segment dark when logically "OFF" */
+/**  Logic Equations   **/
+       /*       a     b     c     d     e     f     g  */
+segment =
+/* 0 */       [ ON,   ON,   ON,   ON,   ON,   ON,  OFF] & data:0 & !rbi
+/* 1 */    #  [OFF,   ON,   ON,  OFF,  OFF,  OFF,  OFF] & data:1
+/* 2 */    #  [ ON,   ON,  OFF,   ON,   ON,  OFF,   ON] & data:2
+/* 3 */    #  [ ON,   ON,   ON,   ON,  OFF,  OFF,   ON] & data:3
+/* 4 */    #  [OFF,   ON,   ON,  OFF,  OFF,   ON,   ON] & data:4
+/* 5 */    #  [ ON,  OFF,   ON,   ON,  OFF,   ON,   ON] & data:5
+/* 6 */    #  [ ON,  OFF,   ON,   ON,   ON,   ON,   ON] & data:6
+/* 7 */    #  [ ON,   ON,   ON,  OFF,  OFF,  OFF,   ON] & data:7
+/* 8 */    #  [ ON,   ON,   ON,   ON,   ON,   ON,  OFF] & data:8
+/* 9 */    #  [ ON,   ON,   ON,   ON,  OFF,   ON,   ON] & data:9
+/* A */    #  [ ON,   ON,   ON,  OFF,   ON,   ON,   ON] & data:A
+/* B */    #  [OFF,  OFF,   ON,   ON,   ON,   ON,   ON] & data:B
+/* C */    #  [ ON,  OFF,  OFF,   ON,   ON,   ON,  OFF] & data:C
+/* D */    #  [OFF,   ON,   ON,   ON,   ON,  OFF,   ON] & data:D
+/* E */    #  [ ON,  OFF,  OFF,   ON,   ON,   ON,   ON] & data:E
+/* F */    #  [ ON,  OFF,  OFF,  OFF,   ON,   ON,   ON] & data:F;
+
+rbo = rbi & data:0;

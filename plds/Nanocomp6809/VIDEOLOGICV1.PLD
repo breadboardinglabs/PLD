@@ -1,0 +1,78 @@
+Name            VGA Video LOgic;
+Partno          NANOCOMP V6;
+Revision        01;
+Date            02/12/22;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/*********************************************************************************/
+/* This PLD replaces 3 inverters for HS, VS and DE, 1 XOR for Cursor/Dotout      */
+/* 1x3 inout NAND for clock clear, 2 flip-flops for DE delay and                 */
+/* 4 flip-flops for SRLatch delay                                                */
+/* High on InvVS and InvHS will invert the signal for -ve sync, low for +ve sync */
+/*                                                                               */
+/*                                                                               */
+/*                                                                               */
+/*********************************************************************************/
+
+/* Pin Map 
+         --------
+  DotClk|1     24| Vcc
+SRDotOut|2     23| ForeBack
+  Cursor|3     22| NC
+  DE    |4     21| /DE
+  Qa    |5     20| /CLR
+  Qb    |6     19| NC
+  Qc    |7     18| NC
+  InvHS |8     17| NC
+  InvVS |9     16| SRLatch
+  HSin  |10    15| HSout
+  VSin  |11    14| VSout
+  Gnd   |12    13| NC 
+         --------
+*/
+
+/*
+ * Inputs:  All are signals from the 6809
+ */
+
+Pin 1  =  DotClk;
+Pin 2  =  SRDotOut;
+Pin 3  =  Cursor;
+Pin 4  =  DE;
+Pin 5  =  Qa;
+Pin 6  =  Qb;
+Pin 7  =  Qc;
+Pin 8  =  InvHS;
+Pin 9  =  InvVS;
+Pin 10 =  HSin;
+Pin 11 =  VSin;
+Pin 13 =  NC;
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 23 = ForeBack;     /* Video serial bit stream for foreground/background selection */
+Pin 22 = NC;           /* NC Flip-flop for DE */
+Pin 21 = /DE;          /* Inverted DE delayed by 2 dot clocks */
+Pin 20 = /CLR;         /* NAND of Qa, Qb, Qc for counter clear */
+Pin 19 = NC;           /* NC Flip-flop for SRLatch */
+Pin 18 = NC;           /* NC Flip-flop for SRLatch */
+Pin 17 = NC;           /* NC Flip-flop for SRLatch */
+Pin 16 = SRLatch;      /* /CLR delayed by 4 dot clocks by Flip-Flops */
+Pin 15 = HSout;        /* Horizontal Sync, inverted if InvHS is true */
+Pin 14 = VSout;        /* Vertical Sync, inverted if InvVS is true */
+/*
+ * Logic:  All outputs are active low signals in the target system.
+ * ! NOT  # OR   & AND  $ XOR
+ */
+Y0VRAM =    ((A15 & !A14 & !A13 & !A12) # (A15 & !A14 & !A13 & A12) # (A15 & !A14 & A13 & !A12) # (A15 & !A14 & A13 & A12)) & E;
+Y1RAM =     !A15 & E;
+Y2CRAM =    A15 & A14 & !A13 & !A12 & E;
+Y3CRTC =    A15 & A14 & !A13 & A12 & !A11 & !A10 & A9 & E;
+Y4PIA1 =    A15 & A14 & !A13 & A12 & !A11 & !A10 & !A9 & E;
+Y5SERIAL1 = A15 & A14 & !A13 & A12 & !A11 & !A10 & A9 & E;
+Y6 =        A14 & A13 & !A12 & E;
+Y7ROM =     A15 & A14 & A13 & E & RW;

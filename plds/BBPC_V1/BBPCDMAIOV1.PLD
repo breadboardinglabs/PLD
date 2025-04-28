@@ -1,0 +1,74 @@
+Name            PCDMAIOV1 Breadboard PC DMA IO Fix V1;
+Partno          PCDMAIOV1;
+Revision        1;
+Date            29/05/24;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/* 29/05/2024 V1 Created for Breadboard PC Video #37 to fix intermittant DMA issues with FDC */
+
+
+/**************************************************************************************/
+/* Intersil DMA Controller CP82C37A seems to get confused when IOR & IOW and A0-A3    */
+/* it appears that order of address register gets swapped sometimes                   */
+/* Known DMA issue from https://groups.google.com/g/comp.sys.ibm.pc/c/ffyU0WrFRwA#04d5d0a6c0893e8b */
+/* Indicates that /IOR and /IOW may not be combined with /CS for some functions       */
+/* Read and write to 0x0C can change the Flip Flop used to switch between MSB and LSB */
+/* Need to OR /IOW and /IOR with /DMACS BUT also allow for when DMA controls the bus  */
+/* Acts like a tri-state buffer with /IOR and /IOW to DMAC gated with /DMACS          */
+/**************************************************************************************/
+
+/* Pin Map 
+           --------
+/IORBUSIN |1     24| Vcc
+/IOWBUSIN |2     23| /IORBUSOUT
+/DMACS    |3     22| /IOWBUSOUT
+/DMAAEN   |4     21| /IORDMAOUT
+/IORDMAIN |5     20| /IOWDMAOUT
+/IOWDMAIN |6     19| NC
+NC        |7     18| NC
+NC        |8     17| NC
+NC        |9     16| NC
+NC        |10    15| NC
+NC        |11    14| NC
+Gnd       |12    13| NC
+           --------
+*/
+
+/*
+ * Inputs:  All are signals from the main bus or DMA controller, using positive logic, invert done in input/output
+ */
+                                                         
+Pin 1  =  !IORBUSIN;  /* RBI Main IOR bus signal as input, BUSIN and BUSOUT wired together and 3 state for BUSOUT */
+Pin 2  =  !IOWBUSIN;  /* WBI Main IOW bus signal as input, BUSIN and BUSOUT wired together and 3 state for BUSOUT */
+Pin 3  =  !DMACS;     /* DCS DMA Chip Select active low but psoitive logic in PLD rules */
+Pin 4  =  !DMAAEN;    /* DEN DMA Has control of bus when active low, Positive logic in PLD rules */
+Pin 5  =  !IORDMAIN;  /* RDI Input IOR from DMA when DMA controls bus */
+Pin 6  =  !IOWDMAIN;  /* WDI Input IOR from DMA when DMA controls bus */
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial, note positive logic, invert done on pin definition
+ */
+
+Pin 23 = !IORBUSOUT;      /* RBO Wire to IORBUSIN (RBI) will be three state when main bus active  */
+Pin 22 = !IOWBUSOUT;      /* WBO Wire to IOWBUSIN (RWI) will be three state when main bus active  */
+Pin 21 = !IORDMAOUT;      /* RDO Wire to IORDMAIN (RDI) will be three state when DMA active */
+Pin 20 = !IOWDMAOUT;      /* RWO Wire to IOWDMAIN (WDI) will be three state when DMA active */
+
+/*
+ * Logic:  All CE outputs are active low signals in the target system.
+ *         OUT refers from PLD to outside, IN input to PLD
+ */
+IORBUSOUT.oe = DMAAEN;  /* Connected to main bus, enabled when DMA active otherwise tri-state */
+IOWBUSOUT.oe = DMAAEN;  /* Connected to main bus, enabled when DMA active otherwise tri-state */
+IORDMAOUT.oe = !DMAAEN; /* Connected to DMA from main bus, enabled when CPU active otherwise tri-state */
+IOWDMAOUT.oe = !DMAAEN; /* Connected to DMA from main bus, enabled when CPU active otherwise tri-state */
+
+IORDMAOUT = IORBUSIN & DMACS; /* Pass /IOR from CPU when CPU controls bus AND DMA CS active */
+IOWDMAOUT = IOWBUSIN & DMACS; /* Pass /IOW from CPU when CPU controls bus AND DMA CS active */
+
+IORBUSOUT = IORDMAIN; /* Pass /IOR from DMA when DMA controls bus */
+IOWBUSOUT = IOWDMAIN; /* Pass /IOW from DMA when DMA controls bus */

@@ -1,0 +1,45 @@
+Name                Flops;
+Partno              CA0002;
+Revision            02;
+Date                07/16/87;
+Designer            G. Woolheiser;
+Company             ATI;
+Location            None;
+Assembly            None;
+
+/************************************************************/
+/*                                                          */
+/*  This example demonstrates the use of D-type flip-flop   */
+/*  to implement a two bit counter using the following      */
+/*  timing diagram.                                         */
+/*              ___     ___     ___     ___     ___         */
+/*  clock  |___|   |___|   |___|   |___|   |___|            */
+/*         _____         ________         ________          */
+/*  q0      /// |_______|        |_______|        |__       */
+/*         _____                 ________________           */
+/*  q1      /// |_______________|                |__        */
+/*                                                          */
+/*                                                          */
+/*         _________                                        */
+/*  reset           |___________________________________    */
+/*                                                          */
+/************************************************************/
+/*      Target Devices: PAL16R8, PAL16RP8, GAL16V8          */
+/************************************************************/
+
+Pin 1 = clock;
+Pin 2 = reset;
+
+/*  Outputs: define outputs and output active levels   */
+
+Pin 17 = q0;
+Pin 16 = q1;
+
+/*  Logic:  two bit counter using expanded exclusive
+
+ors with d-type flip-flop      */
+qo.d = !reset & (!q0 & !q1
+              # !q0 & q1);
+q1.d = !reset & (!q0 & q1
+              # q0 & !q1);
+/* ANDed !reset defines a synchronous register reset */

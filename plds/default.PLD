@@ -1,0 +1,92 @@
+Name            Breadboard ..;
+Partno          BBPC;
+Revision        1;
+Date            01/01/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          g22v10; //g16v8a
+
+/*********************************************************************************/
+/* 01/01/2025 V1                                                                 */
+/*                                                                               */
+/*********************************************************************************/
+/*                                                                               */
+/*********************************************************************************/
+
+/* Pin Map AFT22V10
+          --------
+         |1     24| Vcc
+         |2     23| 
+         |3     22| 
+         |4     21| 
+         |5     20| 
+         |6     19| 
+         |7     18| 
+         |8     17| 
+         |9     16| 
+         |10    15| 
+         |11    14| 
+   Gnd   |12    13| 
+          --------
+*/
+
+/* Pin Map ATF16V8
+          --------
+         |1     20| Vcc
+         |2     19| 
+         |3     18| 
+         |4     17| 
+         |5     16| 
+         |6     15| 
+         |7     14| 
+         |8     13| 
+         |9     12| 
+   Gnd   |10    11| 
+          --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 1  =  ;
+Pin 2  =  ;
+Pin 3  =  ; 
+Pin 4  =  ;
+Pin 5  =  ;
+Pin 6  =  ;
+Pin 7  =  ;
+Pin 8  =  ;
+Pin 9  =  ;
+Pin 10 =  ; // Not 16V8
+Pin 11 =  ; // 16V8 OE
+Pin 13 =  ; // Not 16V8
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+/* This allows conditions like & graphics_mode:0 for Character, & graphics_mode:2 for 2 colour 640x480 */
+field graphics_mode  = [GM1,GM0];
+
+//CLK=DotClk;
+
+Pin 23 = ; /*  */  // Not 16V8
+Pin 22 = ; /*  */  // Not 16V8
+Pin 21 = ; /*  */  // Not 16V8
+Pin 20 = ; /*  */  // Not 16V8
+Pin 19 = ; /*  */
+Pin 18 = ; /*  */
+Pin 17 = ; /*  */
+Pin 16 = ; /*  */
+Pin 15 = ; /*  */
+Pin 14 = ; /*  */
+Pin 13 = ; /*  */
+Pin 12 = ; /*  */
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ *
+ * Logic:  All outputs are active low signals in the target system.
+ */

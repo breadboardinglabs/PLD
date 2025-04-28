@@ -1,0 +1,54 @@
+Name            simplest1;
+Partno          simple1;
+Revision        1;
+Date            19/01/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          g22v10; //g16v8a
+
+/***********************************************************************************/
+/* 19/01/2025 V1 Simplest 22V10 configuration with just a single inverter pin 2-23 */
+/*                                                                                 */
+/***********************************************************************************/
+/*                                                                                 */
+/***********************************************************************************/
+
+/* Pin Map ATF22V10
+          --------
+         |1     24| Vcc
+ input   |2     23| /Output
+         |3     22| 
+         |4     21| 
+         |5     20| 
+         |6     19| 
+         |7     18| 
+         |8     17| 
+         |9     16| 
+         |10    15| 
+         |11    14| 
+   Gnd   |12    13| 
+          --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 2  =  Input;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 23 = !Output; /* Inverted input, note could be mapped by inverted input or inverted output or Logic rule in the assignment */
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ *
+ * Logic:  All outputs are active low signals in the target system.
+ */
+ 
+Output = Input;

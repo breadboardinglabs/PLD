@@ -1,0 +1,47 @@
+SAMPLE.PLD
+Name Sample ;
+Partno P9000183 ;
+Date 07/16/87;
+Revision 02;
+Designer Osann ;
+Company ATI ;
+Assembly PC Memory ;
+Location U106 ;
+/******************************************************/
+/* This device generates chip select signals for one */
+/* 8 Kx8 ROM and two 2 Kx8 static RAMs . It also drives */
+/* the system READY line to insert a wait - state of at */
+/* least one cpu clock for ROM accesses */
+/******************************************************/
+/******************************************************/
+/** Allowable Target Device Types : PAL16R4 , 82 S155 **/
+/******************************************************/
+/** Inputs **/
+Pin 1 = cpu_clk ; /* CPU clock */
+Pin [2..6] = [a15 ..11] ; /* CPU Address Bus */
+Pin [7 ,8] = ![ memw , memr ] ; /* Memory Data Strobes ( active low )*/
+Pin 9 = reset ; /* System Reset */
+Pin 11 = !oe ; /* Output Enable ( active low ) */
+/** Outputs **/
+Pin 19 = ! rom_cs ; /* ROM chip select ( active low ) */
+Pin 18 = ready ; /* CPU ready */
+Pin 15 = wait1 ; /* Wait state 1 */
+Pin 14 = wait2 ; /* Wait state 2 */
+Pin [13 ,12] = ![ ram_cs1 ..0] ; /* RAM chip select ( active low) */
+/** Declarations and Intermediate Variable Definitions */
+Field memadr = [a15 ..11] ; /* Give the address bus */
+/* the Name " memadr " */
+memreq = memw # memr ; /* Create the intermediate */
+/* variable " memreq " */
+select_rom = memr & memadr :[0000..1 FFF ] ; /* = rom_cs */
+/** Logic Equations **/
+rom_cs = select_rom ;
+ram_cs0 = memreq & memadr :[2000..27 FF] ;
+ram_cs1 = memreq & memadr :[2800..2 FFF] ;
+/* read as: when select_rom is true and reset is false */
+wait1 .d = select_rom & ! reset ;
+/* read as: when when select_rom is true and wait1 is true */
+/* Synchronous Reset */
+wait2 .d = select_rom & wait1 ; /* wait1 delayed */
+ready .oe = select_rom ; /* Turn Buffer off */
+ready = wait2 ; /* end wait */

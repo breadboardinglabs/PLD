@@ -1,0 +1,54 @@
+                WGTTL.PLD
+
+Name                   Sample;
+Partno                 P9000183;
+Date                   07/16/87;
+Revision               02;
+Designer               Osann;
+Company                ATI;
+Assembly               PC Memory;
+Location               U106;
+
+/********************************************************/
+/* This device generates chip select signals for one    */
+/* 8Kx8 ROM and two 2Kx8 static RAMs. It also drives    */
+/* the system READY line to insert a wait-state of at   */
+/* least one cpu clock for ROM accesses                 */
+/********************************************************/
+
+/** Inputs **/
+
+PIN 1          = cpu_clk       ;  /* CPU clock          */
+PIN [2..6]     = [a15..11]     ;  /* CPU Address Bus    */
+PIN [7  8]     = ![memw,memr]  ;  /* Memory Data Strobes*/
+PIN 9          = reset         ;  /* System Reset       */
+PIN 11         = !oe           ;  /* Output enable      */
+
+/** Outputs **/
+
+PIN 19         = !rom_cs       ;  /* ROM Chip Select    */
+PIN 18         = ready         ;  /* CPU ready signal   */
+PIN 15         = wait1         ;  /* Start wait state   */
+PIN 14         = wait2         ;  /* End wait state     */
+PIN [13,12]    = ![ram_cs1..0] ;  /* RAM chip selects   */
+
+/** Declarations and Intermediate Variable Definitions **/
+
+a = !(!memw) # !(!memr) ;
+b = !a15 & !a14 ;
+c = !a13 ;
+d = !a12 & !a11 ;
+e = !a11 ;
+f = !a12 & !oe ;
+g = !(!rom_cs # reset) ;
+h = !(!memr) ;
+
+/** Logic Equations **/
+
+!rom_cs = !(h & b & c);
+!ram_cs0 = !(a & b & a13 & d) ;
+!ram_cs1 = !(a & b & a13 & f) ;
+wait1.d = g ;
+wait2.d = wait1 & g ;
+ready.oe = !(!(h & b & c)) ;
+ready = wait2 ;

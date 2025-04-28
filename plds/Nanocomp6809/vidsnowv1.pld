@@ -1,0 +1,152 @@
+Name            VIDSNOW Nanocomp Video Snow Elimination;
+Partno          VIDSNOWV1;
+Revision        1;
+Date            12/11/23;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          v2500C;
+
+/* 01/01/2023 V1                                                                 */
+/*********************************************************************************/
+/*                                                                               */
+/*********************************************************************************/
+
+/* Pin Map 
+       --------
+DotClk|1     40| In
+E     |2     39| In
+R/W   |3     38| In
+Qa    |4     37| In
+Qb    |5     36| DCQ0
+Qc    |6     35| DCQ1
+Y0    |7     34| DCQ2
+I/O4  |8     33| DCQ3
+I/O5  |9     32| SnowY0
+Vcc   |10    31| NotSnowY0
+I/O17 |11    30| GND
+DC69  |12    29| VRW 
+DC36  |13    28| EQa 
+DC912 |14    27| EQb 
+I/O14 |15    26| EQc 
+I/O12 |16    25| MRDY 
+In    |17    24| I/O18 TEST
+In    |18    23| In 
+In    |19    22| In 
+In    |20    21| In 
+       --------
+*/
+
+/*
+ * Inputs:  All are signals from the 6809
+ */
+
+Pin 1  =  DotClk;
+Pin 2  =  E;
+Pin 3  =  RW;
+Pin 4  =  Qa;
+Pin 5  =  Qb;
+Pin 6  =  Qc;
+Pin 7  =  Y0;   /* Low when selected NOTY0 high when selected */
+
+/*
+ * Outputs:  define outputs
+ */
+
+Pin 12 = DC69;
+Pin 13 = DC36;
+Pin 14 = DC912;
+
+Pin 36 = DCQ0;
+Pin 35 = DCQ1;
+Pin 34 = DCQ2;
+Pin 33 = DCQ3; 
+
+Pinnode 88 = DCQ0Q1;
+Pinnode 87 = DCQ1Q1;
+Pinnode 86 = DCQ2Q1;
+Pinnode 85 = DCQ3Q1; 
+
+
+Pin 32 = !SnowY0;     /* Video RAM Low */
+Pin 31 = NotSnowY0;      /* NotY0 */
+Pin 29 = !VRW;         /* Video RAM R/W */
+Pin 28 = EQa;
+Pin 27 = EQb;
+Pin 26 = EQc;
+Pin 25 = !MRDY;
+Pin 24 = TEST;
+
+Pinnode 81 = EQaQ1;
+Pinnode 80 = EQbQ1;
+Pinnode 79 = EQcQ1;
+
+/*
+ * Logic:  All outputs are active low signals in the target system.
+ */
+
+field EQ_CYCLE = [EQc,EQb,EQa];
+field DC_CYCLE = [DCQ3..DCQ0];
+
+TEST = DotClk;
+TEST.oe = 'b'1;
+
+clr = !E; /* When E goes low will clear Q0-Q3 */
+
+/* Load Qa, Qb, Qc at start of rising E */
+EQaQ1.ck = E;
+EQbQ1.ck = E; 
+EQcQ1.ck = E;
+
+EQaQ1.d = Qa;
+EQbQ1.d = Qb;
+EQcQ1.d = Qc;
+
+NotSnowY0=SnowY0;
+
+DCQ0Q1.ck = DotClk & E;
+DCQ1Q1.ck = DotClk & E;
+DCQ2Q1.ck = DotClk & E;
+DCQ3Q1.ck = DotClk & E;
+ 
+DCQ3Q1.d = !clr & ((!DCQ3 & DCQ2 & DCQ1 & DCQ0) # (DCQ3 & !(DCQ2 & DCQ1 & DCQ0)));
+DCQ2Q1.d = !clr & ((!DCQ2 & DCQ1 & DCQ0) # (DCQ2 & !(DCQ1 & DCQ0)));
+DCQ1Q1.d = !clr & (!DCQ1 & DCQ0 # DCQ1 & !DCQ0);
+DCQ0Q1.d = !clr & !DCQ0;
+
+/* These intermediate results are required as SnowY0 has to many terms otherwise, uses 3 extra I/O Pins */
+
+DC69 = (DC_CYCLE:6 # DC_CYCLE:7 # DC_CYCLE:8 # DC_CYCLE:9);
+DC36 = (DC_CYCLE:3 # DC_CYCLE:4 # DC_CYCLE:5 # DC_CYCLE:6);
+DC912 = (DC_CYCLE:9 # DC_CYCLE:10 # DC_CYCLE:11 # DC_CYCLE:12);
+
+MRDY = ((EQ_CYCLE:0 # EQ_CYCLE:1 # EQ_CYCLE:7) & (DC_CYCLE:3 # DC_CYCLE:4)) # 
+       ((EQ_CYCLE:5 # EQ_CYCLE:6) & (DC_CYCLE:3 # DC_CYCLE:4 # DC_CYCLE:5 # DC_CYCLE:6 # DC_CYCLE:7));
+
+/* Only want to return 1 when VRAM Address enabled !Y0 == NOYY0 taken out & !Y0 */
+SnowY0 = !Y0 & (((EQ_CYCLE:0 # EQ_CYCLE:1 # EQ_CYCLE:7) & DC69) # 
+         ((EQ_CYCLE:2 # EQ_CYCLE:3 # EQ_CYCLE:4) & DC36) #
+         ((EQ_CYCLE:5 # EQ_CYCLE:6) & DC912));
+
+VRW = !Y0 & !RW & (((EQ_CYCLE:0 # EQ_CYCLE:1 # EQ_CYCLE:7) & (DC_CYCLE:7 # DC_CYCLE:8)) # 
+         ((EQ_CYCLE:2 # EQ_CYCLE:3 # EQ_CYCLE:4) & (DC_CYCLE:4 # DC_CYCLE:5)) #
+         ((EQ_CYCLE:5 # EQ_CYCLE:6) & (DC_CYCLE:10 # DC_CYCLE:11)));
+
+DC69.oe = 'b'1;
+DC36.oe = 'b'1;
+DC912.oe = 'b'1;
+
+DCQ0.oe = 'b'1;
+DCQ1.oe = 'b'1;
+DCQ2.oe = 'b'1;
+DCQ3.oe = 'b'1; 
+
+SnowY0.oe = 'b'1;
+NotSnowY0.oe = 'b'1;
+VRW.oe = 'b'1;
+EQa.oe = 'b'1;
+EQb.oe = 'b'1;
+EQc.oe = 'b'1;
+MRDY.oe = 'b'1;
+

@@ -1,0 +1,50 @@
+Name            74LS574;
+Partno          74LS574;
+Revision        1;
+Date            01/10/23;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          G16V8MS;
+
+/* 01/10/2023 PLD version of 74LS574 Latch, note OE & CLK pins reversed!            */
+/************************************************************************************/
+/* Provides equivalent of 74LS574 but note OE AND CLK are reversed vs 74LS version  */
+/************************************************************************************/
+
+/* Pin Map ATF16V8
+       --------
+CLK   |1     20| Vcc
+D7    |2     19| Q7
+D6    |3     18| Q6
+D5    |4     17| Q5
+D4    |5     16| Q4
+D3    |6     15| Q3
+D2    |7     14| Q2
+D1    |8     13| Q1
+D0    |9     12| Q0 
+Gnd   |10    11| /OE
+       --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 1  = CLK;
+Pin [9..2]=[D0..7];
+Pin 11 = OE; /* Note in Registered Mode G16V8MS then /OE Pin 11 is automatic  unlike ATF22V10 */
+
+/*
+ * Outputs:  define outputs - all register outputs latched on CLK
+ */
+
+Pin[12..19]=[Q0..7];
+
+/*
+ * Logic:  Latch [D0..D7] to [Q0..Q7] on CLK
+*/
+
+[Q0..7].D = [D0..7];
+

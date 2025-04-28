@@ -1,0 +1,96 @@
+Name            SNOW1V1 Video Logic Snow;
+Partno          SNOW1V1;
+Revision        01;
+Date            20/11/23;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/****************************************************************************/
+/* 20/11/2023 V1 Replacement for ATF2500                                    */
+/*                                                                          */
+/****************************************************************************/
+
+/* Pin Map 
+         --------
+ EDotClk|1     24| Vcc
+  E     |2     23| DC69
+  R/W   |3     22| DC36
+  EQa   |4     21| DC912
+  EQb   |5     20| SnowY0
+  EQc   |6     19| VRW
+  Y0    |7     18| MRDY
+  NC    |8     17| DCQ0
+  NC    |9     16| DCQ1
+  NC    |10    15| DCQ2
+  NC    |11    14| DCQ3
+  Gnd   |12    13| OE 
+         --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 1  =  EDotClk;  /* From SNOW1 E & DotClk */
+Pin 2  =  E;
+Pin 3  =  RW;
+Pin 4  =  EQa;
+Pin 5  =  EQb;
+Pin 6  =  EQc;
+Pin 7  =  Y0;
+Pin 13 =  !OE;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 23 = DC69;         /* Dot Clock Period 6,7,8,9 */
+Pin 22 = DC36;         /* Dot Clock Period 3,4,5,6 */
+Pin 21 = DC912;        /* Dot Clock Period 9,10,11,12 */
+Pin 20 = SnowY0;       /* Snow adjusted Y0 */
+Pin 19 = VRW;          /* Snow adjusted Video R/W */
+Pin 18 = MRDY;         /* Vertical Sync, inverted if InvVS is true */
+Pin 17 = DCQ0;         /* Dot Clock Cycle 0 */
+Pin 16 = DCQ1;         /* Dot Clock Cycle 1 */
+Pin 15 = DCQ2;         /* Dot Clock Cycle 2 */
+Pin 14 = DCQ3;         /* Dot Clock Cycle 3 */
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ */
+
+CLK=EDotClk;
+
+/*
+ * Logic:  
+ */
+
+field EQ_CYCLE = [EQc,EQb,EQa];
+field DC_CYCLE = [DCQ3..DCQ0];
+
+clr = !E; /* When E goes low will clear Q0-Q3 */
+ 
+DCQ3.d = !clr & ((!DCQ3 & DCQ2 & DCQ1 & DCQ0) # (DCQ3 & !(DCQ2 & DCQ1 & DCQ0)));
+DCQ2.d = !clr & ((!DCQ2 & DCQ1 & DCQ0) # (DCQ2 & !(DCQ1 & DCQ0)));
+DCQ1.d = !clr & (!DCQ1 & DCQ0 # DCQ1 & !DCQ0);
+DCQ0.d = !clr & !DCQ0;
+
+/* These intermediate results are required as SnowY0 has to many terms otherwise, uses 3 extra I/O Pins */
+
+DC69 = (DC_CYCLE:6 # DC_CYCLE:7 # DC_CYCLE:8 # DC_CYCLE:9);
+DC36 = (DC_CYCLE:3 # DC_CYCLE:4 # DC_CYCLE:5 # DC_CYCLE:6);
+DC912 = (DC_CYCLE:9 # DC_CYCLE:10 # DC_CYCLE:11 # DC_CYCLE:12);
+
+MRDY = ((EQ_CYCLE:0 # EQ_CYCLE:1 # EQ_CYCLE:7) & (DC_CYCLE:3 # DC_CYCLE:4)) # 
+       ((EQ_CYCLE:5 # EQ_CYCLE:6) & (DC_CYCLE:3 # DC_CYCLE:4 # DC_CYCLE:5 # DC_CYCLE:6 # DC_CYCLE:7));
+
+/* Only want to return 1 when VRAM Address enabled !Y0 == NOYY0 taken out & !Y0 */
+SnowY0 = !Y0 & (((EQ_CYCLE:0 # EQ_CYCLE:1 # EQ_CYCLE:7) & DC69) # 
+         ((EQ_CYCLE:2 # EQ_CYCLE:3 # EQ_CYCLE:4) & DC36) #
+         ((EQ_CYCLE:5 # EQ_CYCLE:6) & DC912));
+
+VRW = !Y0 & !RW & (((EQ_CYCLE:0 # EQ_CYCLE:1 # EQ_CYCLE:7) & (DC_CYCLE:7 # DC_CYCLE:8)) # 
+         ((EQ_CYCLE:2 # EQ_CYCLE:3 # EQ_CYCLE:4) & (DC_CYCLE:4 # DC_CYCLE:5)) #
+         ((EQ_CYCLE:5 # EQ_CYCLE:6) & (DC_CYCLE:10 # DC_CYCLE:11)));

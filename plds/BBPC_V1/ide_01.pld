@@ -1,0 +1,56 @@
+Name     ide_01 ;
+PartNo   00 ;
+Date     31/08/00 ;
+Revision 01 ;
+Designer Lee ;
+Company  ;
+Assembly None ;
+Location  ;
+Device   g16v8as ;
+
+/* This GAL is the select logic for the IDE interface board	*/
+
+/* Logic minimisations		None				*/
+/* Optimizations			None				*/
+/* Download				JEDEC/POF/PRG		*/
+/* Doc File Options		fuse plot, equations	*/
+/* Output				None				*/
+
+/* *************** INPUT PINS *********************/
+
+PIN	1 = A0	;				/* address bus		*/ 
+PIN	2 = A4	;				/* address bus		*/ 
+PIN	3 = A5	;				/* address bus		*/ 
+PIN	4 = A6	;				/* address bus		*/ 
+PIN	5 = A7	;				/* address bus		*/ 
+PIN	6 = p02	;				/* CPU phase 2		*/ 
+PIN	7 = !SEL0	;				/* block select		*/ 
+PIN	8 = RW	;				/* read write		*/ 
+PIN	9 = !SEL1	;				/* block select		*/ 
+/*PIN	11 = A6	;				/* address bus		*/ 
+
+/* *************** OUTPUT PINS *********************/
+
+PIN  19 = !UDW		;			/* key port read strobe		*/ 
+PIN  18 = !UDR		;			/* key port write strobe	*/ 
+PIN  17 = !LDW		;			/* 					*/ 
+PIN  16 = !IOW		;			/* 					*/ 
+PIN  15 = !IOR		;			/* 					*/ 
+PIN  14 = !CS0		;			/* 					*/ 
+PIN  13 = !CS1		;			/* address bus		*/ 
+PIN  12 = !LDR		;			/* address bus		*/ 
+
+/* intermediate terms */
+
+ACT		= !A5 & !A6 & !A7 & !SEL0 & SEL1 ;		/* F1xxh (000x xxxx)
+
+/* Output terms */
+
+CS0 = !A4 & ACT ;
+CS1 = A4 & ACT ;
+IOR = !A0 & ACT & p02 & RW ;
+IOW = A0 & ACT & p02 & !RW ;
+LDR = !A0 & ACT & p02 & RW ;
+LDW = !A0 & ACT & p02 & !RW ;
+UDR = A0 & ACT & RW ;
+UDW = A0 & ACT & !RW ;

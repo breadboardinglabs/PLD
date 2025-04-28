@@ -1,0 +1,120 @@
+Name            BBPCClockBusv2 Controller replaces 8284 and 8288;
+Partno          ClockBusv2;
+Revision        2;
+Date            02/02/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          v750c;
+
+/*************************************************************************************/
+/* 02/02/2025 V1 Combined Clock and Bus controller 8284/8288 for 8088 Min mode       */
+/* 06/02/2025 V2 Change derivation for CLK88 to Q from Flip Flop Q1_0                */
+/*                                                                                   */
+/*************************************************************************************/
+/*                                                                                   */
+/*************************************************************************************/
+
+/* Pin Map ATF750C
+          --------
+ CLK     |1     24| Vcc
+ /RD     |2     23| READY
+ /WR     |3     22| CLK88
+ M/IO    |4     21| /CLK88
+ RDY1    |5     20| /MEMW
+ /AEN1   |6     19| /MEMR
+         |7     18| /IOW
+         |8     17| /IOR
+         |9     16| PCLK
+         |10    15| /RESET
+         |11    14| RESET
+ Gnd     |12    13| /RES
+          --------
+*/
+
+/*
+ * Inputs:  
+ */
+Pin 1  =  CLK;
+Pin 2  =  RD;   /* Active low but logic rules easier without ! */
+Pin 3  =  WR;   /* Active low but logic rules easier without ! */
+Pin 4  =  MIO;
+Pin 5  =  RDY1;
+Pin 6  =  AEN1; /* Active low but logic rules easier without ! */
+Pin 13 =  RES;  /* Note RES is active low but needs to drive D input directly so no ! */
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 23 = READY; /*  */
+Pin 22 = CLK88;
+Pin 21 = INVCLK88;
+Pin 20 = MEMW;  /* Active low but logic rules easier without ! */
+Pin 19 = MEMR;  /* Active low but logic rules easier without ! */
+Pin 18 = IOW;   /* Active low but logic rules easier without ! */
+Pin 17 = IOR;   /* Active low but logic rules easier without ! */
+Pin 16 = PCLK;
+Pin 15 = INVRESET;
+Pin 14 = RESET;
+
+/* PINNODE [25..34]  = [Q1_0..9]; Feedback from Q1 .DFB */
+PINNODE 25  = Q1_0; /* First Flip Flip for divide by 3 */
+PINNODE 26  = Q1_1; /* Second Flip Flop for divide by 3 */
+PINNODE 27  = Q1_2; /* First Flip Flop for READY */
+
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input .DFB Flip Flop feedback .Q 
+ *
+ * Logic:  All outputs are active low signals in the target system.
+ */
+
+/* Divide CLK by 3 and produce 33/67 duty cycle */
+Q1_0.D = (!Q1_0 & !Q1_1); /* D set to Feedback from !FF0 and !FF1 */
+Q1_0.CKMUX = CLK;         /* Clock from main pin 1 CLK */
+
+Q1_1.D = Q1_0;            /* FF1 D set to FF0 Q output */ 
+Q1_1.CKMUX = CLK;         /* Clock from main pin 1 CLK */
+
+//CKrising = Q1_0 # !Q1_1;
+CKrising = Q1_0;
+CKfalling = !CKrising; 
+INVCLK88 = !CKrising;
+CLK88 = CKrising;
+
+PCLK.CK = CLK88;          /* Clock variables must be a single term */
+PCLK.D  = !PCLK;          /* /Q feeds back to D, Q is output as PCLK */
+
+INVRESET.d  = RES;        /* Equivelent of PINNODE 36 Q0_1 */
+INVRESET.CK = CKfalling;
+
+RESET = !INVRESET;       /* Q= /RESET /Q=RESET */
+
+READY.D = (RDY1 & !AEN1) & Q1_2;
+READY.CK = CKfalling;    /* Second READY Flip Flop clocked on faling edge of CLK88 */
+
+Q1_2.D = RDY1 & !AEN1;
+Q1_2.CK = CLK88;
+
+/* Note RD, WR, IOR, IOW, MEMR, MEMW are all active low but easier to do rules without ! on pins */
+IOR = RD # MIO; /* IOR goes low when /IO and /RD */
+IOW = WR # MIO; /* IOW goes low when /IO and /WR */
+
+MEMR = RD # !MIO; /* MEMR goes low when M and /RD */
+MEMW = WR # !MIO; /* MEMW goes low when M and /WR */
+
+/* Disable preset to avoid warnings */
+[Q1_0..2].sp = 'b'0;
+CLK88.sp     = 'b'0;   
+INVCLK88.sp  = 'b'0;
+INVRESET.sp  = 'b'0;
+IOR.sp       = 'b'0;     
+IOW.sp       = 'b'0;     
+MEMR.sp      = 'b'0;    
+MEMW.sp      = 'b'0;    
+PCLK.sp      = 'b'0;    
+READY.sp     = 'b'0;   
+RESET.sp     = 'b'0;   

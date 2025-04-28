@@ -1,0 +1,78 @@
+Name            IDEV2 IDE controller logic;
+Partno          IDEV2;
+Revision        02;
+Date            19/08/24;
+Designer        Dave Henry;
+Company         Breadboarding;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/****************************************************************************/
+/* This PLD provides control logic for IDE 8 Bit disk controller            */
+/* 11/08/2024 v1 Initial version                                            */
+/****************************************************************************/
+
+/* Pin Map 
+         --------
+ /CS_IDE|1     24| Vcc
+ A0     |2     23| IA0
+ A1     |3     22| IA1 
+ A2     |4     21| IA2
+ A3     |5     20| /CS1FX
+ /IOR   |6     19| /CS3FX
+ /IOW   |7     18| UCBA
+  NC    |8     17| UCAB
+  NC    |9     16| /UOE
+  NC    |10    15| /LOE
+  NC    |11    14| DIR 
+  Gnd   |12    13| NC 
+         --------
+*/
+
+/*
+ * Inputs: Active low inputs and outputs converted on pin to +ve logic 
+ */
+
+Pin 1  =  !CS_IDE;
+Pin 2  =  A0;
+Pin 3  =  A1;
+Pin 4  =  A2;
+Pin 5  =  A3;
+Pin 6  =  !IOR;
+Pin 7  =  !IOW;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 23 = IA0;         /* IDE A0 */
+Pin 22 = IA1;         /* IDE A1 */
+Pin 21 = IA2;         /* IDE A2 */
+Pin 20 = !CS1FX;      /* IDE CS 1F - original DeskPro 386 IDE IO Ports! */
+Pin 19 = !CS3FX;      /* IDE CS 3F - original DeskPro 386 IDE IO Ports! */
+Pin 18 = !UCBA;        /* Upper Byte D8-D15 Clock B-A (IDE to CPU), latched on rising L-H Transition */
+Pin 17 = !UCAB;        /* Upper Byte D8-D15 Clock A-B (CPU to IDE), latched on rising L-H Transition */
+Pin 16 = !UOE;        /* Upper Byte D8-D15 Output Enable */
+Pin 15 = !LOE;        /* Lower Byte D0-D7 Output Enable */
+Pin 14 = DIR;         /* Direction True A-B CPU-IDE, False B-A IDE-CPU */
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+ */
+
+IA0 = A0;
+IA1 = A1;
+IA2 = A2;
+
+CS1FX = CS_IDE & !A3; /* 0x0300 active low handled in pin mapping */
+CS3FX = CS_IDE & A3;  /* 0x0308 active low handled in pin mapping */
+
+/* Note when reading IDE data, reading lower byte first latches D8-D15 into the B-A Buffer, upper byte read second */
+/* Note when writing IDE data, writing upper byte first latches CPU D0-D7 into the A-B Buffer, lower byte written second */
+
+DIR = !IOR ;                            /* Allow for +ve logic with /IOR pin mapping, High CPU-IDE unless reading from IDE IOR low */
+LOE = CS1FX & (IOR # IOW) # (CS3FX & (A2 # A1 # A0)) ; /* Enable when reading or writing to Lower Byte and for reading CS3FX other than upper data register in V2! */
+UOE = (CS3FX & !A2 & !A1 & !A0 & IOR) # (CS1FX & !A2 & !A1 & !A0 & IOW);    /* Enable when reading from Upper Byte for 000 or writing to Lower byte for 000 */
+UCAB = CS3FX & !A2 & !A1 & !A0 & IOW ; /* Latch Upper Byte data write to IDE on low to high transition A3=1 */
+UCBA = CS1FX & !A2 & !A1 & !A0 & IOR ; /* Latch Upper Byte data read from IDE on low to high transition on read of lower byte A3=0 */

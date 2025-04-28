@@ -1,0 +1,32 @@
+Name SQUARE;
+Partno XX;
+Date 05/01/96;
+Revision 01;
+Designer Chip Willman;
+Company Logical Devices Inc.;
+Assembly None;
+Location U1;
+Device G16V8;
+/**********************************************************/
+/* This Design Example is an example of a lookup table to */
+/* produce the square of a number coming in. */
+/* */
+/**********************************************************/
+/* Allowable Target Device Types: */
+/**********************************************************/
+/** Inputs **/
+Pin [2..5] = [I0..2] ; /* Input bus line 4 bits */
+/** Outputs **/
+Pin [12..19] = [Ot0..7] ; /* Output bus line 8 bits */
+/** Declarations and Intermediate Variable Definitions **/
+Field input = [I3..0];
+Field output = [Ot7..0];
+/** Logic Equations **/
+Table input=>output {
+‘d’00 => ‘d’000;
+‘d’01 => ‘d’001;
+‘d’02 => ‘d’004;
+$REPEAT A = [3..15]
+‘d’{A} => ‘d’{A*A};
+$REPEND
+}

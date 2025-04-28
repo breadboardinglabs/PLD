@@ -1,0 +1,121 @@
+Name            test2500;
+Partno          Test ATF2500C;
+Revision        1;
+Date            2/1/24;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          v2500C;
+
+/* 02/01/2024 V1                                                                 */
+/*********************************************************************************/
+/*                                                                               */
+/*********************************************************************************/
+
+/* Pin Map 
+       --------
+Clk/In|1     40| In
+In    |2     39| In
+In    |3     38| In
+I/O0  |4     37| In
+I/O1  |5     36| I/O6
+I/O2  |6     35| I/O7
+I/O3  |7     34| I/O8
+I/O4  |8     33| I/O9
+I/O5  |9     32| I/O10
+Vcc   |10    31| I/O11
+I/O17 |11    30| GND
+I/O16 |12    29| I/O23 
+I/O15 |13    28| I/O22 
+I/O14 |14    27| I/O21 
+I/O13 |15    26| I/O20 
+I/O12 |16    25| I/O19 
+In    |17    24| I/O18 
+In    |18    23| In 
+In    |19    22| In 
+In    |20    21| In 
+       --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 1  =  in1;
+Pin 2  =  in2;
+Pin 3  =  in3;
+Pin 4  =  io0;
+Pin 5  =  io1;
+Pin 6  =  io2;
+Pin 7  =  io3;   
+Pin 8  =  io4;   
+Pin 9  =  io5;   
+
+Pin 11 = io17;
+Pin 12 = io16;
+Pin 13 = io15;
+Pin 14 = 1o14;
+Pin 15 = io13;
+Pin 16 = io12;
+
+Pin 17 = in17;
+Pin 18 = in18;
+Pin 19 = in19;
+Pin 20 = in20;
+
+Pin 40 = in40;
+Pin 39 = in39;
+Pin 38 = in38;
+Pin 37 = in37;
+
+Pin 23 = in23;
+Pin 22 = in22;
+Pin 21 = in21;
+
+/*
+ * Outputs:  define outputs
+ */
+
+Pin 36 = io6;
+Pin 35 = io7;
+Pin 34 = io8;
+Pin 33 = io9; 
+Pin 32 = io10; 
+Pin 31 = io11; 
+
+Pin 29 = io23;
+Pin 28 = io22;
+Pin 27 = io21;
+Pin 26 = io20; 
+Pin 25 = io19; 
+Pin 24 = io18; 
+
+
+/*
+ * Logic:  
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+
+ */
+
+io6 = !in1;       /* NOT */
+io7 = in2 & in3;  /* AND */
+io8 = io4 # io5;  /* OR */
+io9 = io6 $ io7;  /* XOR */
+
+io6.oe = 'b'1;
+io7.oe = 'b'1;
+io8.oe = 'b'1;
+io9.oe = 'b'1;
+/* 
+io10.oe = 'b'1;
+io11.oe = 'b'1;
+io23.oe = 'b'1;
+io22.oe = 'b'1;
+io21.oe = 'b'1;
+io20.oe = 'b'1;
+io19.oe = 'b'1;
+io18.oe = 'b'1;
+
+ */

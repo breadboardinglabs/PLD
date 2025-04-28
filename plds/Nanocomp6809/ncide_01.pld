@@ -1,0 +1,59 @@
+Name     ncide_01 ;
+PartNo   00 ;
+Date     11/09/23 ;
+Revision 01 ;
+Designer Dave Henry ;
+Company  ;
+Assembly None ;
+Location  ;
+Device   g16v8as ;
+
+/* This GAL is the select logic for the IDE interface board	
+Based in PLD from Lee Davison http://retro.hansotten.nl/6502-sbc/lee-davison-web-site/ide-bus-interface-circuit/
+*/
+
+/* Logic minimisations		None				*/
+/* Optimizations			None				*/
+/* Download				JEDEC/POF/PRG		*/
+/* Doc File Options		fuse plot, equations	*/
+/* Output				None				*/
+
+/* *************** INPUT PINS *********************/
+/* Use CRTC decoder Y6 D700-D77F   /Y3CRTC Y6 as Y3IDE */
+
+PIN	1 = A0	;				/* address bus		*/ 
+PIN	2 = A4	;				/* address bus		*/ 
+PIN	3 = A5	;				/* address bus		*/ 
+PIN	4 = A6	;				/* address bus		*/ 
+PIN	5 = A7	;				/* address bus		*/ 
+PIN	6 = NC1	;				/* Not connected was CPU E Clock */ 
+PIN	7 = Y3IDE;			/* /Y3CRTC Y6 as Y3IDE */ 
+PIN	8 = RW	;				/* read /write		*/ 
+PIN	9 = NC	;				/* Not connected was SEL1 */ 
+
+/* *************** OUTPUT PINS *********************/
+
+PIN  19 = !UDW		;			/* Upper Data Write	*/ 
+PIN  18 = !UDR		;			/* Upper Data Read	*/ 
+PIN  17 = !LDW		;			/* Lower Data Write */ 
+PIN  16 = !IOW		;			/* IDE I/O Write Strobe */ 
+PIN  15 = !IOR		;			/* IDE I/O Read Strobe */ 
+PIN  14 = !CS0		;			/* Drive Chip Select 0 */ 
+PIN  13 = !CS1		;			/* Drive Chip Select 1 */ 
+PIN  12 = !LDR		;			/* Lower Data Read */ 
+
+/* intermediate terms */
+
+ACT		= !A5 & !A6 & !A7 & !Y3IDE ;		/* D700-D71F  A5,A6,A7=0 */
+
+/* Output terms */
+/* Don't need E as this is combined with Y3IDE already in ACT */
+
+CS0 = !A4 & ACT ;
+CS1 = A4 & ACT ;
+IOR = !A0 & ACT & RW ;
+IOW = A0 & ACT & !RW ;
+LDR = !A0 & ACT & RW ;
+LDW = !A0 & ACT & !RW ;
+UDR = A0 & ACT & RW ;
+UDW = A0 & ACT & !RW ;

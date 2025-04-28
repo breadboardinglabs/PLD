@@ -1,0 +1,103 @@
+Name            PCDECODERV5 Breadboard PC Address Decoder V5 with CUPL Best Practice;
+Partno          PCDECODERV5BP;
+Revision        5;
+Date            14/12/23;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/* 14/12/2023 V1 Created for Breadboard PC Video #7                                 */
+/* 28/12/2023 V2 Corrected PIA & COM0 A16 condition Breadboard PC Video #10         */
+/* 20/01/2024 V3 Added MDA Video RAM and I/O Port decode of A19-A12, E uses IOW/IOW */
+/*               PIACE and COM0CE now use IO Port D000 and D100                     */
+/* 01/10/2024 V4 Added CGA Video RAM 32K B8000 - BFFFF and removed reset inversion  */
+/* 17/11/2024 V5 Added ALE condition to CGA RAM CE to prevent stray signals         */
+/* 30/01/2025 V5 Updated to re-write sections using CUPL best practice              */
+
+
+/**********************************************************************************/
+/*  00000 7FFFF RAM0 512K RAM Uses A19 for /CE                                    */
+/*  80000 9FFFF RAM1 128K RAM /RAM1CE, additional upper memory RAM could be added */
+/*IO D000  DFFF PIA For LED Display and Keypad /PIACE                             */
+/*IO E000  EFFF COM0 Serial Port /COM0CE                                          */
+/*  F8000 FFFFF ROM 32K for Nanocomp Monitor then PC BIOS                         */
+/**********************************************************************************/
+
+/* Pin Map 
+       --------
+A19   |1     24| Vcc
+A18   |2     23| /CGARAM
+A17   |3     22| /IOA19A12
+A16   |4     21| /MDARAM
+A15   |5     20| /COM0CE
+A14   |6     19| /PIACE
+A13   |7     18| /ROMCE
+A12   |8     17| /RAM1CE
+/IOR  |9     16| E
+/IOW  |10    15| ALE
+DEN   |11    14| /DEN
+Gnd   |12    13| NC
+       --------
+*/
+
+/*
+ * Inputs:  All are signals from the 8088/8284/8288
+ */
+Pin [1..8] = [A19..12];                                                          
+Pin 9  =  !IOR; /* Note in logic IOR is True when high */
+Pin 10 =  !IOW; /* Note in logic IOW is True when high */
+Pin 11 =  DEN;
+Pin 15 =  ALE;  /* Adress Latch enable when High allows CPU addresses to pass through latch. Will be latched on high to low transition */
+
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 23 = !CGARAM;   /* CGA 32K Block B8000 - BFFFF  */
+Pin 22 = !IOA19A12; /* IO Ports A19-A12=0 */
+Pin 21 = !MDARAM;   /* MDA 4K Block B0000 - B0FFF  */
+Pin 20 = !COM0CE;   /* MC68B50 Serial Port IO E0000 */
+Pin 19 = !PIACE;    /* PIA MC68B21 for LED display & keypad IO D000 */
+Pin 18 = !ROMCE;    /* ROM F8000 - FFFFF */
+Pin 17 = !RAM1CE;   /* Second RAM for full 640K and upper memory area */
+Pin 16 = E;         /* Motorola compatible E clock */
+Pin 14 = DEN_OUT;   /* Inverted Data Enable for 72ALS245 Bi-Di Buffer */
+
+/*
+ * Declarations and Intermediate Variable Definitions  
+ */
+
+FIELD ADDRESS     = [A19..12] ;
+RAM1_EQN          = ADDRESS:[80000..9FFFF];
+MDA_RAM_EQN       = ADDRESS:[B0000..B0FFF] ;
+CGA_RAM_EQN       = ADDRESS:[B8000..BFFFF] ;
+ROM_EQN           = ADDRESS:[F8000..FFFFF];
+
+IOA19A12_EQN      = ADDRESS:00000;
+PIA_EQN           = ADDRESS:0D000;
+COM0_EQN          = ADDRESS:0E000;
+
+/*
+ * Logic:  All CE outputs are active low signals in the target system.
+ */
+ 
+E = (IOR # IOW); /* Motorola 68xx series compatible clock */
+RAM1CE = RAM1_EQN; /* 80000-9FFFF */
+ROMCE = ROM_EQN;   /* F8000-FFFFF */
+
+/* V2 changed !A16 to A16 for PIACE and COM0CE */
+/* V3 changed PIACE and COM0CE to use IO ports D000 and D100 */
+PIACE = PIA_EQN & (IOR # IOW);   /* IO D000 */
+COM0CE = COM0_EQN & (IOR # IOW); /* IO E000 */
+
+MDARAM = MDA_RAM_EQN;            /* MDA 4K Block B0000 - B0FFF */
+
+/* Include condition to prevent CGARAM Chip Enable when ALE is true during latch refresh */
+CGARAM = CGA_RAM_EQN & !ALE;     /* CGA 32K Block B8000 - BFFFF */
+
+IOA19A12 = IOA19A12_EQN & (IOR # IOW); /* IO Decode of top 8 Address lines to 00 combine with IOR or IOW */
+ 
+DEN_OUT = !DEN;

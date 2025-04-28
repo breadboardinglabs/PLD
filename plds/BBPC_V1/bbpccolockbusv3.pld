@@ -1,0 +1,137 @@
+Name            BBPCClockBusv3 Controller replaces 8284 and 8288;
+Partno          CLKBUSV3;
+Revision        3;
+Date            02/02/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          v750c;
+
+/***************************************************************************************/
+/* 02/02/2025 V1 Combined Clock and Bus controller 8284/8288 for 8088 Min mode         */
+/* 06/02/2025 V2 Change derivation for CLK88 to Q from Flip Flop Q1_0                  */
+/* 07/02/2025 V3 Replace /CLK88 with PITCLK, Add 14Mhz clock input and Turbo selection */
+/*               removed PCLK and add OSCCLK, use PITCLK for WATCHDOG clock            */
+/***************************************************************************************/
+/*                                                                                     */
+/***************************************************************************************/
+
+/* Pin Map ATF750C
+          -------- 
+ 14MHZ   |1     24| Vcc
+ /RD     |2     23| READY
+ /WR     |3     22| CLK88
+ IO/M    |4     21| OSC
+ /RES    |5     20| /MEMW
+ RDY1    |6     19| /MEMR
+ /AEN1   |7     18| /IOW
+         |8     17| /IOR
+         |9     16| PITCLK
+         |10    15| /RESET
+ TURBO   |11    14| RESET
+ Gnd     |12    13| 25MHZ
+          --------
+*/
+
+/*
+ * Inputs:  
+ */
+Pin 1  =  14MHZ; /* Default PC-XT clock 14.318 Mhz, not quite fast enough for Floppy Disk Programmed IO */
+Pin 2  =  RD;    /* Active low but logic rules easier without ! */
+Pin 3  =  WR;    /* Active low but logic rules easier without ! */
+Pin 4  =  IOM;   /* IO High, Memory Active Low, note differences between 8088 and 8086 and diagram Fig 1-37 */   
+Pin 5  =  RES;   /* Active low but logic rules easier without ! Reset Low, Power Good High */
+Pin 6  =  RDY1;  /* RDY1 on PC-XT used for !DMAWAIT, pull high disables DMA */
+Pin 7  =  AEN1;  /* Active low but logic rules easier without ! used for !RDY/WAIT High adds wait states */
+Pin 11 =  TURBO; /* Switch between default clock of 14.3MHz and 25.175 MHz TURBO=1 */
+Pin 13 =  25MHZ; /* 25.175 Clock for Turbo speed */
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 23 = READY;    /* High CPU operates normally, low will add wait states  */
+Pin 22 = CLK88;    /* CPU Clock which will vary between 4.77 MHz and 8.39MHz with Turbo enabled */
+Pin 21 = OSC;      /* The input oscillator clock used for CLK88, needed as CK inputs can't come from > 1 pin */
+Pin 20 = MEMW;     /* Active low but logic rules easier without ! */
+Pin 19 = MEMR;     /* Active low but logic rules easier without ! */
+Pin 18 = IOW;      /* Active low but logic rules easier without ! */
+Pin 17 = IOR;      /* Active low but logic rules easier without ! */
+Pin 16 = PITCLK;   /* Programmable Interval Timer clock, always based on 14.318 Mhz / 12 */
+Pin 15 = INVRESET; /* RESET Active low synchronised with falling edge of CLK88 */
+Pin 14 = RESET;    /* RESET Active high synchronised with falling edge of CLK88 */
+
+/* PINNODE [25..34]  = [Q1_0..9]; Feedback from Q1 .DFB */
+PINNODE 25  = Q1_0; /* First Flip Flip for divide by 3 */
+PINNODE 26  = Q1_1; /* Second Flip Flop for divide by 3 */
+PINNODE 27  = Q1_2; /* First Flip Flop for READY */
+PINNODE 28  = Q1_3; /* First Flip Flop for 14.3Mhz divide by 3 */
+PINNODE 29  = Q1_4; /* Second Flip Flop for 14.3Mhz divide by 3 */
+PINNODE 30  = Q1_5; /* Third Flip Flop for 14.3Mhz divide by 2 */
+
+OSC = (14MHZ & !TURBO) # (25MHZ & TURBO);
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input .DFB Flip Flop feedback .Q 
+ *
+ * Logic:  All outputs are active low signals in the target system.
+ */
+
+/* Divide CLK by 3 and produce 33/67 duty cycle */
+Q1_0.D = (!Q1_0 & !Q1_1); /* D set to Feedback from !FF0 and !FF1 */
+Q1_0.CK = OSC;         /* Clock from Turbo controller OSCCLK */
+
+Q1_1.D = Q1_0;            /* FF1 D set to FF0 Q output */ 
+Q1_1.CK = OSC;         /* Clock from main pin 1 CLK */
+
+/* Divide 14Mhz by 3 and then divide by 4 to get Programmable Interval Timer PITCLK, always uses 14.318MHz */
+Q1_3.D = (!Q1_3 & !Q1_4); /* D set to Feedback from !FF0 and !FF1 */
+Q1_3.CK = 14MHZ;          /* Clock from 14Mhz CLK */
+
+Q1_4.D = Q1_3;            /* FF1 D set to FF0 Q output */ 
+Q1_4.CK = 14MHZ;          /* Clock from main pin 1 CLK */
+
+Q1_5.D = !Q1_5;           /* Divide output from 14.3MHz/3 by 2 */
+Q1_5.CK = Q1_4;
+
+PITCLK.D = !PITCLK;
+PITCLK.CK = Q1_5;
+ 
+CKrising = Q1_0;
+CKfalling = !CKrising; 
+INVCLK88 = !CKrising;
+CLK88 = CKrising;
+
+INVRESET.d  = RES;        /* Equivelent of PINNODE 36 Q0_1 */
+INVRESET.CK = CKfalling;
+
+RESET = !INVRESET;       /* Q= /RESET /Q=RESET */
+
+READY.D = (RDY1 & !AEN1) & Q1_2;
+READY.CK = CKfalling;    /* Second READY Flip Flop clocked on faling edge of CLK88 */
+
+Q1_2.D = RDY1 & !AEN1;
+Q1_2.CK = CLK88;
+
+/* Note RD, WR, IOR, IOW, MEMR, MEMW are all active low but easier to do rules without ! on pins */
+IOR = RD # !IOM; /* IOR goes low when IO and /RD */
+IOW = WR # !IOM; /* IOW goes low when IO and /WR */
+
+MEMR = RD # IOM; /* MEMR goes low when /M and /RD */
+MEMW = WR # IOM; /* MEMW goes low when /M and /WR */
+
+/* Disable preset to avoid warnings */
+[Q1_0..5].sp = 'b'0;
+CLK88.sp     = 'b'0;   
+INVCLK88.sp  = 'b'0;
+INVRESET.sp  = 'b'0;
+IOR.sp       = 'b'0;     
+IOW.sp       = 'b'0;     
+MEMR.sp      = 'b'0;    
+MEMW.sp      = 'b'0;    
+PCLK.sp      = 'b'0;    
+READY.sp     = 'b'0;   
+RESET.sp     = 'b'0;   
+PITCLK.sp    = 'b'0;    

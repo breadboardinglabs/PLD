@@ -1,0 +1,79 @@
+Name            Gates750c;
+Partno          CA0001;
+Revision        04;
+Date            9/12/89;
+Designer        G. Woolhiser;
+Company         Logical Devices, Inc.;
+Location        None;
+Assembly        None;
+Device          v750c;
+
+/****************************************************************/
+/*                                                              */
+/*      This is a example to demonstrate how CUPL               */
+/*      compiles simple gates.                                  */
+/*      Modified from WinCUPL GATES.PLD for v750c and !OE      */ 
+/****************************************************************/
+
+/* Pin Map ATF750C
+          --------
+         |1     24| Vcc
+      a  |2     23| 
+      b  |3     22| 
+         |4     21| xnor
+         |5     20| xor
+         |6     19| nor
+         |7     18| or
+         |8     17| nand
+         |9     16| and
+         |10    15| invb
+         |11    14| inva
+   Gnd   |12    13| /OE
+          --------
+*/
+
+/*
+ * Inputs:  define inputs to build simple gates from
+ */
+
+Pin 2  =  a;
+Pin 3  =  b;
+Pin 13 = !OE;
+
+/*
+ * Outputs:  define outputs as active HI levels
+ *
+ */
+
+Pin 14 = inva;
+Pin 15 = invb;
+Pin 16 = and;
+Pin 17 = nand;
+Pin 18 = or;
+Pin 19 = nor;
+Pin 20 = xor;
+Pin 21 = xnor;
+
+/*
+ * Logic:  examples of simple gates expressed in CUPL
+ */
+
+inva = !a;              /* inverters */
+invb = !b;
+and  = a & b;           /* AND gate */
+nand = !(a & b);        /* NAND gate */
+or   = a # b;           /* OR gate */
+nor  = !(a # b);        /* NOR gate */
+xor  = a $ b;           /* eXclusive OR gate */
+xnor = !(a $ b);        /* eXclusive NOR gate */
+
+inva.oe = OE;
+invb.oe = OE;
+and.oe  = OE;
+nand.oe = OE;
+or.oe   = OE;
+nor.oe  = OE;
+xor.oe  = OE;
+xnor.oe = OE;
+
+

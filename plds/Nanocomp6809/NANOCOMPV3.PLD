@@ -1,0 +1,83 @@
+Name            Nanocomp V3 Memory Map Decoder;
+Partno          NANOCOMPV3;
+Revision        01;
+Date            30/10/22;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/****************************************/
+/*  Original Nanocomp Memory Map        */
+/*     0000            Y0 NA            */
+/*     1000  RAM       Y1               */
+/*     2000            Y2 NA            */
+/*     3000            Y3 NA            */
+/*     4000  PIA       Y4               */
+/*     5000  ACIA      Y5               */
+/*     6000            Y6 NA            */
+/*     7000  ROM       Y7 7800-7FFF     */
+/*     8000-FFFF       Map to 0000-7FFF */
+/****************************************/
+
+/* Pin Map 
+       --------
+E     |1     24| Vcc
+RW    |2     23| /Y0
+A15   |3     22| /Y1RAM
+A14   |4     21| /Y2
+A13   |5     20| /Y3
+A12   |6     19| /Y4PIA
+A11   |7     18| /Y5SERIAL
+A10   |8     17| /Y6
+A9    |9     16| /Y7ROM
+A8    |10    15| NC
+NC    |11    14| NC
+Gnd   |12    13| NC 
+       --------
+*/
+
+/*
+ * Inputs:  All are signals from the 6809 Processor
+ */
+
+Pin 1  =  E;
+Pin 2  =  RW;
+Pin 3  =  A15;
+Pin 4  =  A14;
+Pin 5  =  A13;
+Pin 6  =  A12;
+Pin 7  =  A11;
+Pin 8  =  A10;
+Pin 9  =  A9;
+Pin 10 =  A8;
+Pin 11 =  NC1;
+Pin 13 =  NC2;
+Pin 14 =  NC3;
+Pin 15 =  NC4;
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 23 = !Y0;     /* NA */
+Pin 22 = !Y1RAM;  /* RAM /CS */
+Pin 21 = !Y2;     /* NA */
+Pin 20 = !Y3;     /* NA */
+Pin 19 = !Y4PIA;  /* PIA MC6821 /CS */
+Pin 18 = !Y5SERIAL; /* MC6850 /CS */
+Pin 17 = !Y6;     /* NA */
+Pin 16 = !Y7ROM;  /* ROM /CS */
+
+/*
+ * Logic:  All outputs are active low signals in the target system.
+ *         6809 VMA includes when Q & E are high so could extend access time
+ *         A15 not used in V1-V3 Nanocomp
+ */
+Y0 =      !A14 & !A13 & !A12 & E;
+Y1RAM =   !A14 & !A13 & A12 & E;
+Y2 =      !A14 & A13 & !A12 & E;
+Y3 =      !A14 & A13 & A12 & E;
+Y4PIA =    A14 & !A13 & !A12 & E;
+Y5SERIAL = A14 & !A13 & A12 & E;
+Y6 =       A14 & A13 & !A12 & E;
+Y7ROM =    A14 & A13 & A12 & E & RW;

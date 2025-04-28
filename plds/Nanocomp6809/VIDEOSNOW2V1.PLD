@@ -1,0 +1,66 @@
+Name            SNOW2V1 Video Logic Snow;
+Partno          SNOW2V1;
+Revision        01;
+Date            20/11/23;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/****************************************************************************/
+/* 20/11/2023 V1 Replacement for ATF2500                                    */
+/*                                                                          */
+/****************************************************************************/
+
+/* Pin Map 
+         --------
+  E     |1     24| Vcc
+  Qa    |2     23| EQa
+  Qb    |3     22| EQb
+  Qc    |4     21| EQc
+  DotClk|5     20| EDotClk
+  SnowY0|6     19| NotSnowY0
+  NC    |7     18| NC
+  NC    |8     17| NC
+  NC    |9     16| NC
+  NC    |10    15| NC
+  NC    |11    14| NC
+  Gnd   |12    13| /OE 
+         --------
+*/
+
+/*
+ * Inputs:  
+ */
+
+Pin 1  =  E;
+Pin 2  =  Qa;
+Pin 3  =  Qb;
+Pin 4  =  Qc;
+Pin 5  =  DotClk;
+Pin 6  =  SnowY0;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+Pin 23 = EQa;           /* Latched Qa Dot Clock output /2 */
+Pin 22 = EQb;           /* Latched Qb Dot Clock /4 */
+Pin 21 = EQc;           /* Latched Qc Dot Clock output /8 */
+Pin 20 = EDotClk;
+Pin 19 = NotSnowY0;
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+
+ */
+
+CLK=E;
+
+EQa.d = Qa;
+EQb.d = Qb;
+EQc.d = Qc;
+
+EDotClk = E & DotClk;
+
+NotSnowY0=!SnowY0;

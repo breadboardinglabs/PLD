@@ -1,0 +1,81 @@
+Name            SPKRTIMERV3 Breadboard PC Speaker Output & Refresh Timer V3 with DMA Buffer decoding;
+Partno          SPKRTIMERV3;
+Revision        3;
+Date            16/04/24;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          p22v10;
+
+/* 02/03/2024 V1 Created for Breadboard PC Video #23                                */
+/* 29/03/2024 V2 Created for Breadboard PC Video #30 Add FD Controller IO decoding  */
+/* 16/04/2024 V3 Updated or Breadboard PC Video #31 to added decodng for DMA 74ALS245 Buffer  */
+
+
+/**********************************************************************************/
+/*  See XI 8088 Schematic for OUT1 Flip FLop and Speaker Output NAND              */
+/**********************************************************************************/
+
+/* Pin Map 
+          --------
+ OUT1    |1     24| Vcc
+ /RESET  |2     23| REF_DET 
+ SPKR    |3     22| /DMACS 
+ OUT2    |4     21| DMADIR
+ A0      |5     20| DT/R 
+ A1      |6     19| /DMAAEN 
+ A2      |7     18| /LDCR 
+ /IOR    |8     17| /LDOR 
+ /MEMR   |9     16| /FDCCS 
+ /FDC    |10    15| TC 
+ /TC     |11    14| SPKROUT
+ Gnd     |12    13| NC
+         --------
+*/
+
+/*
+ * Inputs:  
+ */
+Pin 1  =  OUT1;  /* This is the Clock, every 15us */
+Pin 2  =  !RESET; 
+Pin 3  =  SPKR;  /* Port B Speaker output if not using timer */
+Pin 4  =  OUT2;  /* Timer Output 2 for Sound Square Wave */
+Pin 5  =  A0;    /* Address A0-A2 to decode FDC Range from 0x3F0-0x3F7 */
+Pin 6  =  A1;
+Pin 7  =  A2;
+Pin 8  =  !IOR;
+Pin 9  =  !MEMR;
+Pin 10 =  !FDC;  /* Floppy DIsk Controller port range from MDA I/O Decoder 0x3F0-0x3F7 */
+Pin 11 =  TC_IN; /* DMA TC needs to be inverted for ISA bus */
+Pin 19 =  !DMAAEN;
+Pin 20 =  DTR;
+Pin 22 =  !DMACS;
+
+/*
+ * Outputs:  define outputs - all are simple combinatorial
+ */
+
+Pin 14 = !SPKROUT;      /* Speaker Out NAND of SPKR and OUT2 */     
+Pin 15 = TC;            /* DMA TC for ISA bus */
+Pin 16 = !FDCCS;        /* Floppy Disk Controller Data & Status 0x3F4 0x3F5 - uses A0 */
+Pin 17 = !LDOR;         /* Floppy Disk Digital Output Register 0x3F2 */
+Pin 18 = !LDCR;         /* Floppy Disk Control Configuration Register 0x3F7 */
+Pin 21 = DMADIR;        /* DMA 74ALS245 Direction True A-B CPU-DMA, False B-A DMA-CPU */
+Pin 23 = REF_DET;       /* Refresh DRAM timer output toggled */
+
+/*
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   Flip-flop D Input .d  Async Reset .AR Sync PreSet .SP Output Enable .OE 
+*/
+ 
+REF_DET.ar = RESET;
+REF_DET.d = !REF_DET;   /* CLK will toggle REF_DET output value */
+SPKROUT = OUT2 & SPKR;
+TC = !TC_IN;
+
+FDCCS = FDC & A2 & !A1; /* 0x3F4 0x3F5 and ignore A0 */
+LDOR = FDC & !A2 & A1 & !A0; /* DOR 0x3F2 */
+LDCR = FDC & A2 & A1 & A0;   /* CCR 0x3F7 */
+
+DMADIR = !DMAAEN & (!DMACS # DTR) #  DMAAEN & (IOR # MEMR);
