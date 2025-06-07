@@ -1,0 +1,139 @@
+Name            TESTATF1504V1 44 Pin TQFP Thin Quad Flat Package in DIP adapter;
+Partno          TESTATF1504V1;
+Revision        1;
+Date            23/4/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          f1504isptqfp44;
+
+/* 23/04/2025 V1 All inputs mapped to outputs some with ! NOT                    */
+/*********************************************************************************/
+/*                                                                               */
+/*********************************************************************************/
+
+/* Pin Map 
+         --------
+TDI J   |1     44| MC11
+MC5     |2     43| MC14
+MC4     |3     42| MC16
+Gnd     |4     41| Vcc
+MC3/PD1 |5     40| GCLK2/OE2 I
+MC1     |6     39| GCLR I
+TMS J   |7     38| OE1 I
+MC30    |8     37| GCLK1 I
+Vcc     |9     36| Gnd
+MC25    |10    35| MC64/CGLK3
+MC24    |11    34| MC62
+MC21    |12    33| MC57 
+MC20    |13    32| TDO J
+MC19    |14    31| MC53 
+MC17    |15    30| MC52 
+Gnd     |16    29| Vcc 
+Vcc     |17    28| MC51 
+MC33    |18    27| MC49 
+MC35/PD2|19    26| TCK J
+MC36    |20    25| MC46 
+MC37    |21    24| Gnd 
+MC40    |22    23| MC41 
+         --------
+*/
+
+/*
+ * JTAG: For programming, don't use. Re-enable JTAG support 12V on OE1 via 1K8 Resistor
+ *  
+ *  Pin 1  TDI
+ *  Pin 7  TMS
+ *  Pin 26 TCK
+ *  Pin 32 TDO
+ *  
+ */
+
+/*
+ * Inputs:  
+ */
+Pin 40 = GCLK2_OE2;
+Pin 39 = GCLR;
+Pin 38 = OE1; /* Also 12V via 1K8 Resistor will restore JTAG programming if disabled */
+Pin 37 = GCLK1;
+/* Note GLK3 also Pin 35 MC64 */
+
+
+
+/*
+ * Inputs/Outputs:  
+ */
+
+Pin 12      = MC1;
+Pinnode 602 = MC2; /* Feedback Node, Foldback 302 */
+Pin 5       = MC3;
+Pin 3       = MC4;
+Pin 2       = MC5;
+Pinnode 606 = MC6;
+Pinnode 607 = MC7;
+/* MC8 TDI JTAG Do Not use */
+Pinnode 609 = MC9;
+Pinnode 610 = MC10;
+Pin 44      = MC11;
+Pinnode 612 = MC12;
+Pinnode 613 = MC13;
+Pin 43      = MC14;
+Pinnode 614 = MC15;
+Pin 42      = MC16;
+Pin 15      = MC17;
+Pinnode 618 = MC18;
+Pin 14      = MC19;
+Pin 13      = MC20;
+Pin 18      = MC21;
+Pinnode 622 = MC22;
+Pinnode 623 = MC23;
+Pin 11      = MC24;
+Pin 10      = MC25;
+Pinnode 626 = MC26;
+Pinnode 627 = MC27;
+Pinnode 628 = MC28;
+Pinnode 629 = MC29;
+Pin 8       = MC30;
+Pinnode 631 = MC31;
+/* MC32 TMS JTAG Do Not use */
+Pin 18      = MC33;
+Pinnode 634 = MC34;
+Pin 19      = MC35;
+Pin 20      = MC36;
+Pin 21      = MC37;
+Pinnode 638 = MC38;
+Pinnode 639 = MC39;
+Pin 22      = MC40;
+Pin 23      = MC41;
+Pinnode 642 = MC42;
+Pinnode 643 = MC43;
+Pinnode 644 = MC44;
+Pinnode 645 = MC45;
+Pin 25      = MC46;
+Pinnode 647 = MC47;
+/* MC48 TCK JTAG Do Not use */
+Pin 27      = MC49;
+Pinnode 650 = MC50;
+Pin 28      = MC51;
+Pin 30      = MC52;
+Pin 31      = MC53;
+Pinnode 654 = MC54;
+Pinnode 655 = MC55;
+/* MC56 TDO JTAG Do Not use */
+Pin 33      = MC57;
+Pinnode 658 = MC58;
+Pinnode 659 = MC59;
+Pinnode 660 = MC60;
+Pinnode 661 = MC61;
+Pin 34      = MC62;
+Pinnode 663 = MC63;
+Pin 35      = MC64;
+
+/*
+ * Logic:  
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+
+ */
+

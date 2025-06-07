@@ -1,0 +1,301 @@
+Name            TESTATF1508100V2 100 Pin TQFP Thin Quad Flat Package in 0.1" adapter;
+Partno          TESTATF1508100V2;
+Revision        2;
+Date            25/5/25;
+Designer        Dave Henry;
+Company         ;
+Location        UK;
+Assembly        None;
+Device          f1508isptqfp100;
+
+/* 22/05/2025 V1 All inputs mapped to outputs and all global terms used          */
+/*********************************************************************************/
+/*                                                                               */
+/*********************************************************************************/
+
+/* Select ATF1508 Fitter Property list */
+/* 1) Preassign Keep is on - Keep User assigned pins */
+/* 2) Disable Pin Keeper Circuits */
+/* 3) Enable fast slew rate */
+
+PROPERTY ATMEL {preassign keep};
+PROPERTY ATMEL {pin_keep OFF} ; /* Disables pin-keeper circuits */
+PROPERTY ATMEL {OUTPUT_FAST ON};
+PROPERTY ATMEL { jtag=on };
+
+/* Pin Map for 100 pin Breadboard TQFP adapter.
+Note pin layout different from .FIT file pin 26 moved from bottom to left, 76 from top to right. Rows in top and bottom swapped.
+
+                                         G                                                    
+                                         C                                                    
+                                         L                                                    
+                                       V K                                                    
+                                       C 2     G   M M M   M M M M M                                  
+                             M   M M M C _ G   C   C C C   C C C C C                           
+                     M M M M C G C C C I O C O L G 1 1 1 V 1 1 1 1 1                           
+                     C C C C 1 N 1 1 1 N E L E K N 2 2 2 C 2 2 2 1 1                         
+                     5 6 8 9 1 D 3 4 6 T 2 R 1 1 D 8 6 5 C 3 1 0 8 7                         
+                   ----------------------------------------------------                     
+                  /    99  97  95  93  91  89  87  85  83  81  79  77  \  Odd Outside pins                 
+                 /  100  98  96  94  92  90  88  86  84  82  80  78     \ Even Inside pins                 
+Even inside MC3 | 1                                                   76 | MC115   Even Inside pins         
+Odd outside MC1 | 2                                                   75 | MC113   Odd Outside pins         
+            VCC | 3                                                   74 | GND              
+            TDI | 4                                                   73 | TDO              
+           MC30 | 5                                                   72 | MC110               
+           MC29 | 6                                                   71 | MC109             
+           MC27 | 7                                                   70 | MC107               
+           MC25 | 8                                                   69 | MC105             
+           MC24 | 9                                                   68 | MC104             
+           MC22 | 10                                                  67 | MC102            
+            GND | 11                                                  66 | VCC              
+           MC21 | 12                     ATF1508                      65 | MC101             
+           MC19 | 13                  100-Lead TQFP                   64 | MC99            
+           MC17 | 14                                                  63 | MC97             
+            TMS | 15                                                  62 | TCK              
+           MC46 | 16                                                  61 | MC94             
+           MC45 | 17                                                  60 | MC93             
+            VCC | 18                                                  59 | GND              
+           MC43 | 19                                                  58 | MC91             
+           MC41 | 20                                                  57 | MC89             
+           MC40 | 21                                                  56 | MC88             
+           MC38 | 22                                                  55 | MC86             
+           MC37 | 23                                                  54 | MC85             
+           MC35 | 24                                                  53 | MC83               
+           MC33 | 25                                                  52 | MC81             
+            GND | 26                                                  51 | VCC 
+                 \     28  30  32  34  36  38  40  42  44  46  48  50   /  Odd Outside pins                 
+                  \  27  29  31  33  35  37  39  41  43  45  47  49     /   Even Inside pins                 
+                   ----------------------------------------------------                     
+                     M M M M M M M V M M M G V M M M G M M M M M M M                       
+                     C C C C C C C C C C C N C C C C N C C C C C C C                       
+                     6 6 6 5 5 5 5 C 5 5 4 D C 6 6 6 D 7 7 7 7 7 7 8                         
+                     4 2 1 9 7 6 4   3 1 9   I 5 7 9   0 2 3 5 7 8 0                         
+                                             N
+                                             T
+
+VCC = Supply Voltage for IO pin which must be connected to (5.0V or 3.3V)
+VCCINT = VCC +5V Internal
+GND = GND pin which must be connected to ground
+TMS,TDI,TDO,TDI = JTAG pins which must reserved for the JTAG interface
+NC = Unused I/O pins which must be unconnected on the board
+*/
+
+/*
+ * JTAG: For programming, don't use. Re-enable JTAG support 12V on OE1 via 1K8 Resistor
+ *  
+ *  Pin 4  TDI MC8
+ *  Pin 15 TMS MC32
+ *  Pin 62 TCK MC48
+ *  Pin 73 TDO MC56
+ *  
+ */
+
+/*
+ * Inputs:  
+ */
+Pin 90 = GCLK2_OE2;
+Pin 89 = GCLR;
+Pin 88 = OE1; /* Also 12V via 1K8 Resistor will restore JTAG programming if disabled */
+Pin 87 = GCLK1;
+/* Note GLK3 also Pin 85 MC64 */
+
+
+
+/*
+ * Inputs/Outputs:  
+ */
+
+/* Group A MC1-MC16 */
+Pin 2       = MC1; 
+Pin 1       = MC3; 
+Pin 100     = MC5;
+Pin 99      = MC6;
+Pin 98      = MC8;
+Pin 97      = MC9;
+Pin 96      = MC11;
+Pin 94      = MC13;
+Pin 93      = MC14;
+Pin 92      = MC16;
+
+/* Group B MC17-MC32 */
+Pin 14      = MC17;
+Pin 13      = MC19;
+Pin 12      = MC21;
+Pin 10      = MC22;
+Pin 9       = MC24;
+Pin 8       = MC25;
+Pin 7       = MC27;
+Pin 6       = MC29;
+Pin 5       = MC30;
+/* Pin 4 MC32 TDI JTAG Do Not use */
+
+/* Group C MC33-MC48 */
+Pin 25      = MC33;
+Pin 24      = MC35;
+Pin 23      = MC37;
+Pin 22      = MC38;
+Pin 21      = MC40;
+Pin 20      = MC41;
+Pin 19      = MC43;
+Pin 17      = MC45;
+Pin 16      = MC46;
+/* Pin 15 MC48 TMS JTAG Do Not use */
+
+/* Group D MC49-MC64 */
+Pin 37      = MC49;
+Pin 36      = MC51;
+Pin 35      = MC53;
+Pin 33      = MC54;
+Pin 32      = MC56;
+Pin 31      = MC57;
+Pin 30      = MC59;
+Pin 29      = MC61;
+Pin 28      = MC62;
+Pin 27      = MC64;
+
+/* Group E MC65-MC80 */
+Pin 40      = MC65;
+Pin 41      = MC67;
+Pin 42      = MC69;
+Pin 44      = MC70;
+Pin 45      = MC72;
+Pin 46      = MC73;
+Pin 47      = MC75;
+Pin 48      = MC77;
+Pin 49      = MC78;
+Pin 50      = MC80;
+
+/* Group F MC81-MC96 */
+Pin 52      = MC81;
+Pin 53      = MC83;
+Pin 54      = MC85;
+Pin 55      = MC86;
+Pin 56      = MC88;
+Pin 57      = MC89;
+Pin 58      = MC91;
+Pin 60      = MC93;
+Pin 61      = MC94;
+/* Pin 62 MC96 TCK JTAG Do Not use */
+
+/* Group G MC97-MC112 */
+Pin 63      = MC97;
+Pin 64      = MC99;
+Pin 65      = MC101;
+Pin 67      = MC102;
+Pin 68      = MC104;
+Pin 69      = MC105;
+Pin 70      = MC107;
+Pin 71      = MC109;
+Pin 72      = MC110;
+/* Pin 73 MC112 TDO JTAG Do Not use */
+
+/* Group H MC113-MC128 */
+Pin 75      = MC113;
+Pin 76      = MC115;
+Pin 77      = MC117;
+Pin 78      = MC118;
+Pin 79      = MC120;
+Pin 80      = MC121;
+Pin 81      = MC123;
+Pin 83      = MC125;
+Pin 84      = MC126;
+Pin 85      = MC128;
+
+/*
+ * Logic:  
+ * Logic symbols
+ * ! NOT  # OR   & AND  $ XOR   .d D Flip-flop Input
+
+ */
+
+/* Assign all MC as inputs or outputs to generate pin map */
+
+
+Field MacroCells = [MC128..1];
+MacroCells.CK=GCLK1;
+
+MC1.D = !MC1;
+MC3.D = !MC3;
+MC5.D = !MC5;
+MC6.D = !MC6;
+MC8.D = !MC8;
+MC9.D = !MC9;
+MC11.D = !MC11;
+MC13.D = !MC13;
+MC14.D = !MC14;
+MC16.D = !MC16;
+
+MC17.D = !MC17;
+MC19.D = !MC19;
+MC21.D = !MC21;
+MC22.D = !MC22;
+MC24.D = !MC24;
+MC25.D = !MC25;
+MC27.D = !MC27;
+MC29.D = !MC29;
+MC30.D = !MC30;
+     
+MC33.D = !MC33;
+MC35.D = !MC35;
+MC37.D = !MC37;
+MC38.D = !MC38;
+MC40.D = !MC40;
+MC41.D = !MC41;
+MC43.D = !MC43;
+MC45.D = !MC45;
+MC46.D = !MC46;
+
+MC49.D = !MC49;
+MC51.D = !MC51;
+MC53.D = !MC53;
+MC54.D = !MC54;
+MC56.D = !MC56;
+MC57.D = !MC57;
+MC59.D = !MC59;
+MC61.D = !MC61;
+MC62.D = !MC62;
+MC64.D = !MC64;
+
+MC65.D = !MC65;
+MC67.D = !MC67;
+MC69.D = !MC69;
+MC70.D = !MC70;
+MC72.D = !MC72;
+MC73.D = !MC73;
+MC75.D = !MC75;
+MC77.D = !MC77;
+MC78.D = !MC78;
+MC80.D = !MC80;
+
+MC81.D = !MC81;
+MC83.D = !MC83;
+MC85.D = !MC85;
+MC86.D = !MC86;
+MC88.D = !MC88;
+MC89.D = !MC89;
+MC91.D = !MC91;
+MC93.D = !MC93;
+MC94.D = !MC94;
+
+MC97.D = !MC97;
+MC99.D = !MC99;
+MC101.D = !MC101;
+MC102.D = !MC102;
+MC104.D = !MC104;
+MC105.D = !MC105;
+MC107.D = !MC107;
+MC109.D = !MC109;
+MC110.D = !MC110;
+      
+MC113.D = !MC113;
+MC115.D = !MC115;
+MC117.D = !MC117;
+MC118.D = !MC118;
+MC120.D = !MC120;
+MC121.D = !MC121;
+MC123.D = !MC123;
+MC125.D = !MC125;
+MC126.D = !MC126;
+MC128.D = !MC128;
+
